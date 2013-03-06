@@ -1,0 +1,1 @@
+Place interface assets in this directory.
