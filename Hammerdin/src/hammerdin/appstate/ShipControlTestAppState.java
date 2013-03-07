@@ -8,6 +8,7 @@ import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
+import com.jme3.light.DirectionalLight;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.SceneGraphVisitor;
 import com.jme3.scene.Spatial;
@@ -31,6 +32,12 @@ public class ShipControlTestAppState extends AbstractAppState {
     private void initState()
     {
         System.out.println("inited");
+        Spatial scene = app.getAssetManager().loadModel("Scenes/ShipControlTestScene.j3o");
+        app.getRootNode().attachChild(scene);
+        
+        DirectionalLight sun = new DirectionalLight();
+        sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f));
+        app.getRootNode().addLight(sun);
         app.getRootNode().depthFirstTraversal(new SceneGraphVisitor() {
 
             public void visit(Spatial spatial) {
@@ -40,10 +47,12 @@ public class ShipControlTestAppState extends AbstractAppState {
                 {
                     System.out.println("found");
                     shipControl.initKeyMapping(app.getInputManager());
-                    app.getCamera().lookAt(spatial.getWorldTranslation(), Vector3f.UNIT_X);
+                    
                 }
             }
         });
+        app.getCamera().setLocation(new Vector3f(0, 100, 0));
+        app.getCamera().lookAt(app.getRootNode().getWorldTranslation(), Vector3f.UNIT_Z);
     }
     
     @Override
