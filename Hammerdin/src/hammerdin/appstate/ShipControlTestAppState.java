@@ -10,9 +10,14 @@ import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.CameraNode;
+import com.jme3.scene.Node;
 import com.jme3.scene.SceneGraphVisitor;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.control.CameraControl.ControlDirection;
 import hammerdin.control.ShipControl;
+import hammerdin.control.ShipControl2;
+import hammerdin.control.ShipControl3;
 
 /**
  *
@@ -21,7 +26,6 @@ import hammerdin.control.ShipControl;
 public class ShipControlTestAppState extends AbstractAppState {
     
     SimpleApplication app;
-    
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
@@ -31,6 +35,7 @@ public class ShipControlTestAppState extends AbstractAppState {
     
     private void initState()
     {
+        final int testControl = 3;
         System.out.println("inited");
         Spatial scene = app.getAssetManager().loadModel("Scenes/ShipControlTestScene.j3o");
         app.getRootNode().attachChild(scene);
@@ -41,18 +46,18 @@ public class ShipControlTestAppState extends AbstractAppState {
         app.getRootNode().depthFirstTraversal(new SceneGraphVisitor() {
 
             public void visit(Spatial spatial) {
-                System.out.println("visited: " );
-                ShipControl shipControl = spatial.getControl(ShipControl.class);
-                if(shipControl != null)
+                if(spatial.getName().equals("ship"))
                 {
-                    System.out.println("found");
-                    shipControl.initKeyMapping(app.getInputManager());
-                    
+                    if(testControl == 1)
+                        setupControl1(spatial);
+                    else if(testControl == 2)
+                        setupControl2(spatial);
+                    else if(testControl == 3)
+                        setupControl3(spatial);
                 }
             }
         });
-        app.getCamera().setLocation(new Vector3f(0, 100, 0));
-        app.getCamera().lookAt(app.getRootNode().getWorldTranslation(), Vector3f.UNIT_Z);
+        
     }
     
     @Override
@@ -63,7 +68,9 @@ public class ShipControlTestAppState extends AbstractAppState {
     
     @Override
     public void update(float tpf) {
-        //TODO: implement behavior during runtime
+        //Vector3f loc = ship.getLocalTranslation();
+        //Vector3f cam = app.getCamera().getLocation();
+        //app.getCamera().lookAt(ship.getWorldTranslation(), Vector3f.UNIT_Z);
     }
     
     @Override
@@ -72,5 +79,65 @@ public class ShipControlTestAppState extends AbstractAppState {
         //TODO: clean up what you initialized in the initialize method,
         //e.g. remove all spatials from rootNode
         //this is called on the OpenGL thread after the AppState has been detached
+    }
+    
+    private void setupControl1(Spatial spatial)
+    {
+        System.out.println("found");
+                    Node container = ((Node)spatial);
+                    Spatial ship =  container.getChildren().get(0);
+                    ShipControl shipControl = new ShipControl();
+                    shipControl.setContainerNode(container);
+                    shipControl.initKeyMapping(app.getInputManager());
+                    ship.addControl(shipControl);
+                    
+                    app.getFlyByCamera().setEnabled(false);
+        
+                    //create the camera Node
+                    CameraNode camNode = new CameraNode("Camera Node", app.getCamera());
+                    //This mode means that camera copies the movements of the target:
+                    camNode.setControlDir(ControlDirection.SpatialToCamera);
+                    //Attach the camNode to the target:
+                    container.attachChild(camNode);
+                    //Move camNode, e.g. behind and above the target:
+                    camNode.setLocalTranslation(new Vector3f(0, 100, 0));
+                    //Rotate the camNode to look at the target:
+                    camNode.lookAt(((Node)spatial).getLocalTranslation(), Vector3f.UNIT_Y);
+    }
+    
+    private void setupControl2(Spatial spatial)
+    {
+        ShipControl2 shipControl = new ShipControl2();
+                    shipControl.initKeyMapping(app.getInputManager());
+                    spatial.addControl(shipControl);
+        app.getCamera().setLocation(new Vector3f(0, 100, 0));
+        app.getCamera().lookAt(app.getRootNode().getWorldTranslation(), Vector3f.UNIT_Z);
+        
+    }
+    
+    private void setupControl3(Spatial spatial)
+    {
+        System.out.println("found");
+        Node container = ((Node)spatial);
+        Spatial ship =  container.getChildren().get(0);
+        ShipControl3 shipControl = new ShipControl3();
+        shipControl.setContainerNode(container);
+        shipControl.initKeyMapping(app.getInputManager());
+        ship.addControl(shipControl);
+
+        app.getFlyByCamera().setEnabled(false);
+
+        //create the camera Node
+        CameraNode camNode = new CameraNode("Camera Node", app.getCamera());
+        //This mode means that camera copies the movements of the target:
+        camNode.setControlDir(ControlDirection.SpatialToCamera);
+        //Attach the camNode to the target:
+        container.attachChild(camNode);
+        //Move camNode, e.g. behind and above the target:
+        camNode.setLocalTranslation(new Vector3f(0, 100, 0));
+        //Rotate the camNode to look at the target:
+        camNode.lookAt(((Node)spatial).getLocalTranslation(), Vector3f.UNIT_Y);
+        app.getInputManager().setCursorVisible(true);
+        shipControl.setCam(camNode.getCamera());
     }
 }

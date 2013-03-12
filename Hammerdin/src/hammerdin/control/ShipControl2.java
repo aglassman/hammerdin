@@ -10,15 +10,13 @@ import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
-import com.jme3.input.MouseInput;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
-import com.jme3.input.controls.MouseAxisTrigger;
+import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
@@ -28,7 +26,7 @@ import java.io.IOException;
  *
  * @author aglassman
  */
-public class ShipControl extends AbstractControl{
+public class ShipControl2 extends AbstractControl{
 
     public static final String SHIP_LEFT = "SHIP_LEFT";
     public static final String SHIP_RIGHT = "SHIP_RIGHT";
@@ -36,10 +34,10 @@ public class ShipControl extends AbstractControl{
     public static final String SHIP_REVERSE = "SHIP_REVERSE";
     public static final String SHIP_STOP = "SHIP_STOP";
     public float velocity = 0f;
+    public float angVelocity = 0f;
     public float direction = 0f;
     public Quaternion quat = new Quaternion(0, 1, 0, 1);
-    private Node containerNode;
-    private Vector3f lookAtMouseVector = new Vector3f();
+    
     public float maxVelocity = 5f;
     
      @Override
@@ -49,7 +47,8 @@ public class ShipControl extends AbstractControl{
     }
     
     public Control cloneForSpatial(Spatial spatial) {
-        ShipControl control = new ShipControl();
+        ShipControl2 control = new ShipControl2();
+        //TODO: copy parameters to new Control
         return control;
     }
     
@@ -79,10 +78,10 @@ public class ShipControl extends AbstractControl{
                 switch(name){
                      
                     case SHIP_LEFT:
-                        direction = direction += 6*tpf;
+                        angVelocity = angVelocity <= 2*FastMath.PI ? angVelocity += 6*tpf : angVelocity;
                         break;
                     case  SHIP_RIGHT:
-                        direction = direction -= 6*tpf;
+                        angVelocity = angVelocity >= -2*FastMath.PI ? angVelocity -= 6*tpf : angVelocity;
                         break;
                     case  SHIP_FORWARD:
                         velocity = velocity <= maxVelocity ? velocity +=  (tpf*1) : velocity;
@@ -92,7 +91,7 @@ public class ShipControl extends AbstractControl{
                         break;
                     case SHIP_STOP:
                         velocity = velocity / (1.1f);
-                        //angVelocity = angVelocity / (1.06f);
+                        angVelocity = angVelocity / (1.06f);
                        
                         break;
                 }
@@ -102,7 +101,7 @@ public class ShipControl extends AbstractControl{
             }
         }, SHIP_LEFT,SHIP_RIGHT,SHIP_FORWARD,SHIP_REVERSE,SHIP_STOP);
         
-        
+       
         inputManager.addMapping(SHIP_LEFT,new  KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping(SHIP_RIGHT,new  KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping(SHIP_FORWARD,new  KeyTrigger(KeyInput.KEY_W));
@@ -112,10 +111,16 @@ public class ShipControl extends AbstractControl{
     int count = 0;
     @Override
     protected void controlUpdate(float tpf) {
+        direction += angVelocity*tpf;
         count++;
         Quaternion newDirection = new Quaternion().fromAngleAxis(direction, Vector3f.UNIT_Y);
+        //get scaled bank based on angVelocity, and max angVelocity of PI
+        Quaternion bank = new Quaternion().fromAngleAxis((-angVelocity/(2*FastMath.PI) * FastMath.HALF_PI), Vector3f.UNIT_Z);
         Vector3f velocityMod = newDirection.mult(Vector3f.UNIT_Z).mult(velocity);
+        newDirection = newDirection.mult(bank);
         spatial.setLocalRotation(newDirection);
+        
+        spatial.setLocalTranslation(spatial.getLocalTranslation().add(velocityMod));
         
         if(count == 60)
         {
@@ -123,11 +128,7 @@ public class ShipControl extends AbstractControl{
             System.out.println("velMod: " + velocityMod);
             count = 0;
         }
-        containerNode.setLocalTranslation(containerNode.getLocalTranslation().add(velocityMod));
-    }
-
-    public void setContainerNode(Node container) {
-        containerNode = container;
+        
     }
     
 }
