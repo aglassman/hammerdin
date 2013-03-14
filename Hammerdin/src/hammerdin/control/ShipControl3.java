@@ -11,6 +11,7 @@ import com.jme3.export.OutputCapsule;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
+import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
@@ -40,8 +41,9 @@ public class ShipControl3 extends AbstractControl{
     public static final String SHIP_STOP = "SHIP_STOP";
     public static final String M_X = "MOUSE_MOVEMENT_X";
     public static final String M_Y = "MOUSE_MOVEMENT_Y";
-    
-    public float velocity = 0f;
+    public static final String DEBUG = "DEBUG";
+    private InputManager inputManager = null;
+    public Vector3f velocity = new Vector3f();
     //public float angVelocity = 0f;
     public float direction = 0f;
     public Quaternion quat = new Quaternion(0, 1, 0, 1);
@@ -84,97 +86,106 @@ public class ShipControl3 extends AbstractControl{
     }
 
     public void initKeyMapping(final InputManager inputManager) {
+        this.inputManager = inputManager;
         System.out.println("mapped");
         inputManager.addListener(new AnalogListener() {
 
            
             @Override
             public void onAnalog(String name, float value, float tpf) {
+                Vector3f t = spatial.getLocalTranslation();
                 switch(name){
                      
+                    //plus x = left
                     case SHIP_LEFT:
-                        direction = direction += 6*tpf;
+                        velocity.x += 1*tpf;
                         break;
+                    //minus x = right
                     case  SHIP_RIGHT:
-                        direction = direction -= 6*tpf;
+                        velocity.x -= 1*tpf;
                         break;
+                    //plus z = up                   
                     case  SHIP_FORWARD:
-                        velocity = velocity <= maxVelocity ? velocity +=  (tpf*1) : velocity;
+                        velocity.z += 1*tpf;
                         break;
+                    //minus z = down
                     case  SHIP_REVERSE:
-                         velocity = velocity >= -maxVelocity ? velocity -= (tpf*1) : velocity;
+                         velocity.z -= 1*tpf;
                         break;
+                    //slow ship to a stop                   
                     case SHIP_STOP:
-                        velocity = velocity / (1.1f);
-                        //angVelocity = angVelocity / (1.06f);
-                       
+                          velocity.x = velocity.x/(1.1f);
+                          velocity.z = velocity.z/(1.1f);
+                        break;
+                    case DEBUG:
+                        debugOn = !debugOn;
                         break;
                 }
-                System.out.println(
-                        String.format("v: %s d: %s tpf: %s, val: %s name: %s"
-                            ,velocity,direction,tpf, value, name));
+               
             }
         }, SHIP_LEFT,SHIP_RIGHT,SHIP_FORWARD,SHIP_REVERSE,SHIP_STOP);
         
         
-        inputManager.addListener(new AnalogListener() {
-
-            @Override
-            public void onAnalog(String name, float value, float tpf) {
-                Vector2f click2d = inputManager.getCursorPosition();
-                lookAtMouseVector = cam.getWorldCoordinates(new Vector2f(click2d.x, click2d.y), 0f).clone();
-                lookAtMouseVector = lookAtMouseVector.mult(new Vector3f(1,0,1));
-                System.out.println("click2d: " + click2d);
-                System.out.println("click3d: " + lookAtMouseVector );
-                System.out.println("x: " + spatial.getLocalTransform().getTranslation().x);
-                System.out.println("z: " + spatial.getLocalTransform().getTranslation().z+ "\n");
-            }
-        }, M_X,M_Y);
-        
-        inputManager.addMapping(M_X, new MouseAxisTrigger(MouseInput.AXIS_X, false));
-        inputManager.addMapping(M_Y, new MouseAxisTrigger(MouseInput.AXIS_Y, false));
+//        inputManager.addListener(new AnalogListener() {
+//
+//            @Override
+//            public void onAnalog(String name, float value, float tpf) {
+//                lookAtMouseVector = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0f);
+//                lookAtMouseVector = lookAtMouseVector.mult(new Vector3f(1,0,1));
+//                //System.out.println("click2d: " + click2d);
+//                //System.out.println("click3d: " + lookAtMouseVector );
+//                //System.out.println("x: " + spatial.getLocalTransform().getTranslation().x);
+//                //System.out.println("z: " + spatial.getLocalTransform().getTranslation().z+ "\n");
+//            }
+//        }, M_X,M_Y);
+//        
+//        inputManager.addMapping(M_X, new MouseAxisTrigger(MouseInput.AXIS_X, false));
+//        inputManager.addMapping(M_Y, new MouseAxisTrigger(MouseInput.AXIS_Y, false));
         inputManager.addMapping(SHIP_LEFT,new  KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping(SHIP_RIGHT,new  KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping(SHIP_FORWARD,new  KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping(SHIP_REVERSE,new  KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping(SHIP_STOP, new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping(DEBUG, new KeyTrigger(KeyInput.KEY_I));
     }
     int count = 0;
-    boolean countOn = true;
+    boolean debugOn = false;
     @Override
     protected void controlUpdate(float tpf) {
-        //direction += angVelocity*tpf;
-        count++;
-        Quaternion newDirection = new Quaternion().fromAngleAxis(direction, Vector3f.UNIT_Y);
-        //get scaled bank based on angVelocity, and max angVelocity of PI
-        //Quaternion bank = new Quaternion().fromAngleAxis((direction/(2*FastMath.PI) * FastMath.HALF_PI), Vector3f.UNIT_Z);
-        Vector3f velocityMod = newDirection.mult(Vector3f.UNIT_Z).mult(velocity);
-        //newDirection = newDirection.mult(bank);
-       
+        Vector3f camVec = cam.getLocation();
         
-        //spatial.setLocalTranslation(spatial.getLocalTranslation().add(velocityMod));
-     
-          Quaternion q = new Quaternion();
-         lookAtMouseVector =  lookAtMouseVector.normalize();
-       Vector3f a = Vector3f.UNIT_Z.cross(lookAtMouseVector);
-       q = new Quaternion(a.x, a.y, a.z, 
-               FastMath.sqrt(FastMath.sqr(Vector3f.UNIT_Z.length()) * FastMath.sqr(lookAtMouseVector.length())));// + Vector3f.UNIT_Z.mult(lookAtMouseVector));
+        //This creates a Quaternion that will point at the mouse.
+        lookAtMouseVector = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0f);
         
+        //Translate the vector to the origin so the quaternion can be calcualted correctly.
+        lookAtMouseVector = lookAtMouseVector.subtract(containerNode.getLocalTranslation());
+        lookAtMouseVector = lookAtMouseVector.mult(new Vector3f(1,0,1));
+        Quaternion q = new Quaternion();
+        q.lookAt(lookAtMouseVector, Vector3f.UNIT_Y);
+        
+        //Set the rotation
         spatial.setLocalRotation(q);
         
-        if(countOn && count == 60)
+         //Add to the local translation based on the current velocity
+        containerNode.setLocalTranslation(containerNode.getLocalTranslation().add(velocity));
+        
+        //debug loop
+        count++;
+        if(debugOn && count == 120)
         {
-            //System.out.println("newDir: " + newDirection);
-            //System.out.println("velMod: " + velocityMod);
+            System.out.println("cam: " + camVec);
+            System.out.println("mouse: " + lookAtMouseVector);
             System.out.println("quat: " + q);
+            System.out.println();
             count = 0;
         }
-        containerNode.setLocalTranslation(containerNode.getLocalTranslation().add(velocityMod));
-        
-     
-        
     }
 
+    /**
+     * Container node is what the camera is attached to.  This
+     * allows the camera to stay still despite what the ship may do later on.
+     * @param container 
+     */
     public void setContainerNode(Node container) {
         containerNode = container;
     }
