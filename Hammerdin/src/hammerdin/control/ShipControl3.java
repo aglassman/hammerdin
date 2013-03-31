@@ -11,13 +11,10 @@ import com.jme3.export.OutputCapsule;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
-import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
-import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
-import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
@@ -26,29 +23,33 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
+import entitysystem.subsystem.debug.DebugProxy;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
  * @author aglassman
  */
-public class ShipControl3 extends AbstractControl{
+public class ShipControl3 extends AbstractControl implements DebugProxy{
 
     public static final String SHIP_LEFT = "SHIP_LEFT";
     public static final String SHIP_RIGHT = "SHIP_RIGHT";
     public static final String SHIP_FORWARD = "SHIP_FORWARD";
     public static final String SHIP_REVERSE = "SHIP_REVERSE";
     public static final String SHIP_STOP = "SHIP_STOP";
-    public static final String M_X = "MOUSE_MOVEMENT_X";
-    public static final String M_Y = "MOUSE_MOVEMENT_Y";
+    public static final String MOUSE_MOVE = "MOUSE_MOVE";
     public static final String DEBUG = "DEBUG";
     private InputManager inputManager = null;
     public Vector3f velocity = new Vector3f();
-    //public float angVelocity = 0f;
-    public float direction = 0f;
-    public Quaternion quat = new Quaternion(0, 1, 0, 1);
+    
+    private ShipEasingFunction sef;
+    
+    
+    private Quaternion direction = new Quaternion();
+    
     private Node containerNode;
-    private Vector3f lookAtMouseVector = new Vector3f();
     public float maxVelocity = 5f;
     private Camera cam = null;
     
@@ -57,6 +58,10 @@ public class ShipControl3 extends AbstractControl{
         this.cam = cam;
     }
     
+    public void setShipEasingFunction(ShipEasingFunction sef)
+    {
+        this.sef = sef;
+    }
     
      @Override
     protected void controlRender(RenderManager rm, ViewPort vp) {
@@ -98,19 +103,19 @@ public class ShipControl3 extends AbstractControl{
                      
                     //plus x = left
                     case SHIP_LEFT:
-                        velocity.x += 1*tpf;
+                        velocity.x += 90*tpf;
                         break;
                     //minus x = right
                     case  SHIP_RIGHT:
-                        velocity.x -= 1*tpf;
+                        velocity.x -= 90*tpf;
                         break;
                     //plus z = up                   
                     case  SHIP_FORWARD:
-                        velocity.z += 1*tpf;
+                        velocity.z += 90*tpf;
                         break;
                     //minus z = down
                     case  SHIP_REVERSE:
-                         velocity.z -= 1*tpf;
+                         velocity.z -= 90*tpf;
                         break;
                     //slow ship to a stop                   
                     case SHIP_STOP:
@@ -126,21 +131,18 @@ public class ShipControl3 extends AbstractControl{
         }, SHIP_LEFT,SHIP_RIGHT,SHIP_FORWARD,SHIP_REVERSE,SHIP_STOP);
         
         
-//        inputManager.addListener(new AnalogListener() {
-//
-//            @Override
-//            public void onAnalog(String name, float value, float tpf) {
-//                lookAtMouseVector = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0f);
-//                lookAtMouseVector = lookAtMouseVector.mult(new Vector3f(1,0,1));
-//                //System.out.println("click2d: " + click2d);
-//                //System.out.println("click3d: " + lookAtMouseVector );
-//                //System.out.println("x: " + spatial.getLocalTransform().getTranslation().x);
-//                //System.out.println("z: " + spatial.getLocalTransform().getTranslation().z+ "\n");
-//            }
-//        }, M_X,M_Y);
-//        
-//        inputManager.addMapping(M_X, new MouseAxisTrigger(MouseInput.AXIS_X, false));
-//        inputManager.addMapping(M_Y, new MouseAxisTrigger(MouseInput.AXIS_Y, false));
+        inputManager.addListener(new AnalogListener() {
+
+            @Override
+            public void onAnalog(String name, float value, float tpf) {
+                calculateNewDirection();
+            }
+        }, MOUSE_MOVE);
+        
+        inputManager.addMapping(MOUSE_MOVE, new MouseAxisTrigger(MouseInput.AXIS_X, false));
+        inputManager.addMapping(MOUSE_MOVE, new MouseAxisTrigger(MouseInput.AXIS_Y, false));
+        inputManager.addMapping(MOUSE_MOVE, new MouseAxisTrigger(MouseInput.AXIS_X, true));
+        inputManager.addMapping(MOUSE_MOVE, new MouseAxisTrigger(MouseInput.AXIS_Y, true));
         inputManager.addMapping(SHIP_LEFT,new  KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping(SHIP_RIGHT,new  KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping(SHIP_FORWARD,new  KeyTrigger(KeyInput.KEY_W));
@@ -148,34 +150,45 @@ public class ShipControl3 extends AbstractControl{
         inputManager.addMapping(SHIP_STOP, new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addMapping(DEBUG, new KeyTrigger(KeyInput.KEY_I));
     }
+    
+    /**
+     * This sets the direction quaternion to look at the current 
+     * mouse position from the ship position.
+     */
+    private void calculateNewDirection()
+    {
+        //get cursor position in world coordinates.
+        Vector3f worldPostionOfMouse = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0f);
+        
+        //Treat position as vector, and translate it to the origin so the quaternion can be calcualted correctly.
+        worldPostionOfMouse = worldPostionOfMouse.subtract(containerNode.getLocalTranslation());
+        worldPostionOfMouse.y = 0;//worldPostionOfMouse = worldPostionOfMouse.mult(new Vector3f(1,0,1));
+        direction.lookAt(worldPostionOfMouse, Vector3f.UNIT_Y);
+    }
+    
     int count = 0;
     boolean debugOn = false;
     @Override
     protected void controlUpdate(float tpf) {
-        Vector3f camVec = cam.getLocation();
-        
-        //This creates a Quaternion that will point at the mouse.
-        lookAtMouseVector = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0f);
-        
-        //Translate the vector to the origin so the quaternion can be calcualted correctly.
-        lookAtMouseVector = lookAtMouseVector.subtract(containerNode.getLocalTranslation());
-        lookAtMouseVector = lookAtMouseVector.mult(new Vector3f(1,0,1));
-        Quaternion q = new Quaternion();
-        q.lookAt(lookAtMouseVector, Vector3f.UNIT_Y);
-        
-        //Set the rotation
-        spatial.setLocalRotation(q);
+        /* This is what makes the ship rotate slower.
+         * We will probably have to use some sort of function to determine
+         * what float value to use in the slerp command.  Different functions
+         * will give different weightly feels to the ship control.
+         */
+        Quaternion newShipRot =  spatial.getLocalRotation();
+        newShipRot.slerp(direction, tpf * sef.getSlurpFloat(spatial.getLocalRotation(), direction));
+        spatial.setLocalRotation(newShipRot);
         
          //Add to the local translation based on the current velocity
-        containerNode.setLocalTranslation(containerNode.getLocalTranslation().add(velocity));
+        containerNode.setLocalTranslation(containerNode.getLocalTranslation().add(velocity.mult(tpf)));
         
         //debug loop
         count++;
         if(debugOn && count == 120)
         {
-            System.out.println("cam: " + camVec);
-            System.out.println("mouse: " + lookAtMouseVector);
-            System.out.println("quat: " + q);
+            //System.out.println("cam: " + camVec);
+            //System.out.println("mouse: " + lookAtMouseVector);
+            //System.out.println("quat: " + q);
             System.out.println();
             count = 0;
         }
@@ -188,6 +201,14 @@ public class ShipControl3 extends AbstractControl{
      */
     public void setContainerNode(Node container) {
         containerNode = container;
+    }
+
+    @Override
+    public List<String> getDebugInfo() {
+        return Arrays.asList(
+                "Ship - Hello World",
+                "direction: " + direction.toString(),
+                "velocity: " + velocity.toString());
     }
     
 }

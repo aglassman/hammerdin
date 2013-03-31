@@ -15,6 +15,11 @@ import com.jme3.scene.Node;
 import com.jme3.scene.SceneGraphVisitor;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.CameraControl.ControlDirection;
+import entitysystem.EntitySystem;
+import entitysystem.subsystem.debug.DebugEntity;
+import entitysystem.subsystem.debug.DebugSubSystem;
+import entitysystem.subsystem.debug.GuiDebugRenderer;
+import hammerdin.control.AdvancedEasingFunction;
 import hammerdin.control.ShipControl;
 import hammerdin.control.ShipControl2;
 import hammerdin.control.ShipControl3;
@@ -26,11 +31,17 @@ import hammerdin.control.ShipControl3;
 public class ShipControlTestAppState extends AbstractAppState {
     
     SimpleApplication app;
+    EntitySystem es = new EntitySystem();
+    DebugSubSystem dss = null;
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
         this.app = (SimpleApplication)app;
-            initState();
+                   
+        dss = new DebugSubSystem(new GuiDebugRenderer(this.app));
+        es.registerSubSystem(dss);
+        
+        initState();
     }
     
     private void initState()
@@ -68,9 +79,7 @@ public class ShipControlTestAppState extends AbstractAppState {
     
     @Override
     public void update(float tpf) {
-        //Vector3f loc = ship.getLocalTranslation();
-        //Vector3f cam = app.getCamera().getLocation();
-        //app.getCamera().lookAt(ship.getWorldTranslation(), Vector3f.UNIT_Z);
+        es.process();
     }
     
     @Override
@@ -139,5 +148,11 @@ public class ShipControlTestAppState extends AbstractAppState {
         camNode.lookAt(((Node)spatial).getLocalTranslation(), Vector3f.UNIT_Y);
         app.getInputManager().setCursorVisible(true);
         shipControl.setCam(camNode.getCamera());
+        shipControl.setShipEasingFunction(new AdvancedEasingFunction());
+        
+        DebugEntity de = new DebugEntity(1l, shipControl);
+        de.updateOnCount = 100;
+        de.on = true;
+        dss.register(de);
     }
 }
