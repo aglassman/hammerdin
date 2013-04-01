@@ -8,6 +8,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.math.ColorRGBA;
+import com.jme3.scene.Node;
 import java.util.List;
 
 /**
@@ -15,9 +16,16 @@ import java.util.List;
  * @author aglassman
  */
 public class GuiDebugRenderer implements DebugRenderer{
-
+    boolean on = true;
+    SimpleApplication app;
     BitmapText debugText = null;
     public GuiDebugRenderer(SimpleApplication app)
+    {
+        this.app = app;
+        createAndAttach();
+    }
+    
+    public void createAndAttach()
     {
         BitmapFont debugFont = app.getAssetManager().loadFont("Interface/Fonts/Console.fnt");
         int size = debugFont.getCharSet().getRenderedSize()+5;
@@ -52,13 +60,26 @@ public class GuiDebugRenderer implements DebugRenderer{
 
     @Override
     public void render() {
-        if(sb == null)
+        if(!on || sb == null)
             return;
         
         if(debugText != null)
             debugText.setText(sb.toString());
         
         sb = null;
+    }
+
+    @Override
+    public void toggle() {
+        if(on)
+        {
+            app.getGuiNode().getChildren().remove(debugText);
+        }
+        else
+        {
+            createAndAttach();
+        }
+        on = !on;
     }
         
 }

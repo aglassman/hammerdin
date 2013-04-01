@@ -11,7 +11,7 @@ import java.util.List;
  * @author aglassman
  */
 public class SystemOutDebugRenderer implements DebugRenderer{
-
+    private boolean on = true;
     StringBuilder sb = null;
     
     @Override
@@ -33,12 +33,15 @@ public class SystemOutDebugRenderer implements DebugRenderer{
 
     @Override
     public void render() {
-        if(sb == null)
+        if(!on || sb == null)
             return;
         
         System.out.println(sb.toString());
         sb = null;
     }
 
-    
+    public void toggle()
+    {
+        on = !on;
+    }
 }

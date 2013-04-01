@@ -13,5 +13,7 @@ public interface DebugRenderer {
     public void preRender(DebugEntity e);
 
     public void render();
+
+    public void toggle();
     
 }

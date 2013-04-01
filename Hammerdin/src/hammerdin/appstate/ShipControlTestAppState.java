@@ -154,5 +154,8 @@ public class ShipControlTestAppState extends AbstractAppState {
         de.updateOnCount = 100;
         de.on = true;
         dss.register(de);
+        
+        dss.initDebugKeyboardControl(app.getInputManager());
+        
     }
 }
