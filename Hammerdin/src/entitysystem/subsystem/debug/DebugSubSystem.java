@@ -7,7 +7,7 @@ package entitysystem.subsystem.debug;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import entitysystem.SubSystem;
-import input.utils.KeySequence;
+import input.utils.Sequence;
 import input.utils.Keystroke;
 import input.utils.KeystrokeSequence;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class DebugSubSystem extends SubSystem{
     
     public void initDebugKeyboardControl(InputManager im)
     {
-        KeySequence keySequence = new KeySequence("Toggle All Debug On.", 
+        Sequence keySequence = new Sequence("Toggle All Debug On.", 
                 new Keystroke(KeyInput.KEY_LCONTROL, Keystroke.Type.HELD),
                 new Keystroke(KeyInput.KEY_Z, Keystroke.Type.TERMINAL));
         
@@ -67,7 +67,7 @@ public class DebugSubSystem extends SubSystem{
             }
         });
         
-        KeySequence keySequence2 = new KeySequence("Toggle All Debug Off.", 
+        Sequence keySequence2 = new Sequence("Toggle All Debug Off.", 
                 new Keystroke(KeyInput.KEY_LCONTROL, Keystroke.Type.HELD),
                 new Keystroke(KeyInput.KEY_X, Keystroke.Type.TERMINAL));
         
@@ -81,7 +81,7 @@ public class DebugSubSystem extends SubSystem{
             }
         });
         
-        KeySequence keySequence3 = new KeySequence("Turn Off Debug Renderer.", 
+        Sequence keySequence3 = new Sequence("Turn Off Debug Renderer.", 
                 new Keystroke(KeyInput.KEY_LCONTROL, Keystroke.Type.HELD),
                 new Keystroke(KeyInput.KEY_C, Keystroke.Type.TERMINAL));
         

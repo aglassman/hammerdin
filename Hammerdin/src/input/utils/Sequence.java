@@ -10,11 +10,11 @@ import java.util.Arrays;
  *
  * @author aglassman
  */
-public class KeySequence
+public class Sequence
 {
     public final String name;
     public final Keystroke[] sequence;
-    public KeySequence(String name,Keystroke... sequence)
+    public Sequence(String name,Keystroke... sequence)
     {
         this.name = name;
         this.sequence = sequence;

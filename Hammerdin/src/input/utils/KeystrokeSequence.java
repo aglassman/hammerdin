@@ -19,10 +19,10 @@ public class KeystrokeSequence {
     
     public final List<Callback> callbacks = new ArrayList<Callback>();
     
-    public KeystrokeSequence(InputManager im, List<KeySequence> inputSequences)
+    public KeystrokeSequence(InputManager im, List<Sequence> inputSequences)
     {
 
-        for(final KeySequence ks : inputSequences)
+        for(final Sequence ks : inputSequences)
         {
             String[] mappingNames = new String[ks.sequence.length];
             for(int index = 0; index < ks.sequence.length; index++)
@@ -92,7 +92,7 @@ public class KeystrokeSequence {
         
     }
     
-    public void resetSequenceAndRunCallback(KeySequence ks)
+    public void resetSequenceAndRunCallback(Sequence ks)
     {
         for(Callback c: callbacks)
             c.run();
@@ -101,7 +101,7 @@ public class KeystrokeSequence {
         
     }
     
-    public void resetSequence(KeySequence ks)
+    public void resetSequence(Sequence ks)
     {
         for(Keystroke kst : ks.sequence)
             kst.currentValue = 0;
