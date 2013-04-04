@@ -8,7 +8,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.math.ColorRGBA;
-import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import java.util.List;
 
 /**
@@ -38,6 +38,8 @@ public class GuiDebugRenderer implements DebugRenderer{
         debugText.setLocalTranslation(width,height,1);
         app.getGuiNode().attachChild(debugText);
     }
+    
+   
     
    StringBuilder sb = null;
     
@@ -73,11 +75,11 @@ public class GuiDebugRenderer implements DebugRenderer{
     public void toggle() {
         if(on)
         {
-            app.getGuiNode().getChildren().remove(debugText);
+            debugText.setCullHint(Spatial.CullHint.Always);
         }
         else
         {
-            createAndAttach();
+            debugText.setCullHint(Spatial.CullHint.Never);
         }
         on = !on;
     }

@@ -191,7 +191,7 @@ public class ShipControlTestAppState extends BulletAppState {
         app.getFlyByCamera().setEnabled(false);
 
         //create the camera Node
-        ChaseCamera chaseCam = new ChaseCamera(app.getCamera(),ship,app.getInputManager());
+        ChaseCamera chaseCam = new ChaseCamera(app.getCamera(),ship);
         chaseCam.setChasingSensitivity(1);
         chaseCam.setUpVector(Vector3f.UNIT_Y);
         chaseCam.setDefaultDistance(100);
