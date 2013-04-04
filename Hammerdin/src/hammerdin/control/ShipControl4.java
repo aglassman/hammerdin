@@ -4,6 +4,7 @@
  */
 package hammerdin.control;
 
+import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
@@ -17,11 +18,8 @@ import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
-import com.jme3.renderer.RenderManager;
-import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 import entitysystem.subsystem.debug.DebugProxy;
 import java.io.IOException;
@@ -32,24 +30,26 @@ import java.util.List;
  *
  * @author aglassman
  */
-public class ShipControl3 extends AbstractControl implements DebugProxy{
-
-    public static final String SHIP_LEFT = "SHIP_LEFT";
-    public static final String SHIP_RIGHT = "SHIP_RIGHT";
-    public static final String SHIP_FORWARD = "SHIP_FORWARD";
-    public static final String SHIP_REVERSE = "SHIP_REVERSE";
-    public static final String SHIP_STOP = "SHIP_STOP";
-    public static final String MOUSE_MOVE = "MOUSE_MOVE";
-    public static final String DEBUG = "DEBUG";
-    private InputManager inputManager = null;
+public class ShipControl4 extends RigidBodyControl implements DebugProxy{
+    
+    public static final String SHIP_LEFT = "A";
+    public static final String SHIP_RIGHT = "B";
+    public static final String SHIP_FORWARD = "C";
+    public static final String SHIP_REVERSE = "D";
+    public static final String SHIP_STOP = "E";
+    public static final String MOUSE_MOVE = "F";
+    public static final String ROTATE_L = "G";
+    public static final String ROTATE_R = "H";
     public Vector3f velocity = new Vector3f();
     
-    private ShipEasingFunction sef;
+    public ShipControl4(float mass)
+    {
+        super(mass);
+    }
     
     
     private Quaternion direction = new Quaternion();
     
-    private Node containerNode;
     public float maxVelocity = 5f;
     private Camera cam = null;
     
@@ -58,16 +58,9 @@ public class ShipControl3 extends AbstractControl implements DebugProxy{
         this.cam = cam;
     }
     
-    public void setShipEasingFunction(ShipEasingFunction sef)
-    {
-        this.sef = sef;
-    }
+   
     
-     @Override
-    protected void controlRender(RenderManager rm, ViewPort vp) {
-        //Only needed for rendering-related operations,
-        //not called when spatial is culled.
-    }
+   
     
     public Control cloneForSpatial(Spatial spatial) {
         ShipControl3 control = new ShipControl3();
@@ -90,9 +83,14 @@ public class ShipControl3 extends AbstractControl implements DebugProxy{
         //out.write(this.value, "name", defaultValue);
     }
 
+    private int constant = 100;
+    private Vector3f left = Vector3f.UNIT_X.mult(constant);
+    private Vector3f right = Vector3f.UNIT_X.mult(-constant);
+    private Vector3f up = Vector3f.UNIT_Z.mult(constant);
+    private Vector3f down = Vector3f.UNIT_Z.mult(-constant);
+    
     public void initKeyMapping(final InputManager inputManager) {
-        this.inputManager = inputManager;
-        System.out.println("mapped");
+        setAngularDamping(0f);
         inputManager.addListener(new AnalogListener() {
 
            
@@ -103,32 +101,35 @@ public class ShipControl3 extends AbstractControl implements DebugProxy{
                      
                     //plus x = left
                     case SHIP_LEFT:
-                        velocity.x += 90*tpf;
+                        applyForce(left, Vector3f.ZERO);
                         break;
                     //minus x = right
                     case  SHIP_RIGHT:
-                        velocity.x -= 90*tpf;
+                        applyForce(right, Vector3f.ZERO);
                         break;
                     //plus z = up                   
                     case  SHIP_FORWARD:
-                        velocity.z += 90*tpf;
+                        applyForce(up, Vector3f.ZERO);
                         break;
                     //minus z = down
                     case  SHIP_REVERSE:
-                         velocity.z -= 90*tpf;
+                         applyForce(down, Vector3f.ZERO);
+                        break;
+                    case ROTATE_L:
+                        applyTorqueImpulse(Vector3f.UNIT_Y.mult(2f));
+                        break;
+                        
+                    case ROTATE_R:
+                        applyTorqueImpulse(Vector3f.UNIT_Y.mult(-2f));
                         break;
                     //slow ship to a stop                   
                     case SHIP_STOP:
-                          velocity.x = velocity.x/(1.1f);
-                          velocity.z = velocity.z/(1.1f);
-                        break;
-                    case DEBUG:
-                        debugOn = !debugOn;
+                          clearForces();
                         break;
                 }
                
             }
-        }, SHIP_LEFT,SHIP_RIGHT,SHIP_FORWARD,SHIP_REVERSE,SHIP_STOP);
+        }, SHIP_LEFT,SHIP_RIGHT,SHIP_FORWARD,ROTATE_L,ROTATE_R,SHIP_REVERSE,SHIP_STOP);
         
         
         inputManager.addListener(new AnalogListener() {
@@ -148,6 +149,8 @@ public class ShipControl3 extends AbstractControl implements DebugProxy{
         inputManager.addMapping(SHIP_FORWARD,new  KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping(SHIP_REVERSE,new  KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping(SHIP_STOP, new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping(ROTATE_L, new KeyTrigger(KeyInput.KEY_LEFT));
+        inputManager.addMapping(ROTATE_R, new KeyTrigger(KeyInput.KEY_RIGHT));
     }
     
     /**
@@ -157,58 +160,36 @@ public class ShipControl3 extends AbstractControl implements DebugProxy{
     private void calculateNewDirection()
     {
         //get cursor position in world coordinates.
-        Vector3f worldPostionOfMouse = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0f);
+        //Vector3f worldPostionOfMouse = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0f);
         
         //Treat position as vector, and translate it to the origin so the quaternion can be calcualted correctly.
-        worldPostionOfMouse = worldPostionOfMouse.subtract(containerNode.getLocalTranslation());
-        worldPostionOfMouse.y = 0;//worldPostionOfMouse = worldPostionOfMouse.mult(new Vector3f(1,0,1));
-        direction.lookAt(worldPostionOfMouse, Vector3f.UNIT_Y);
+        //worldPostionOfMouse = worldPostionOfMouse.subtract(getPhysicsLocation());
+        //worldPostionOfMouse.y = 0;//worldPostionOfMouse = worldPostionOfMouse.mult(new Vector3f(1,0,1));
+        //direction.lookAt(worldPostionOfMouse, Vector3f.UNIT_Y);
+        
+        //ap
+        
+        //applyTorqueImpulse(Vector3f.UNIT_Y.mult(.1f));
     }
     
     int count = 0;
     boolean debugOn = false;
+    
+    
+    
     @Override
-    protected void controlUpdate(float tpf) {
-        /* This is what makes the ship rotate slower.
-         * We will probably have to use some sort of function to determine
-         * what float value to use in the slerp command.  Different functions
-         * will give different weightly feels to the ship control.
-         */
-        //spatial.getLocalRotation().0nhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-        Quaternion newShipRot =  spatial.getLocalRotation();
-        newShipRot.slerp(direction, sef.getSlurpFloat(spatial.getLocalRotation(), direction,tpf));
-        //spatial.setLocalRotation(newShipRot);
-        //sef.getSlurpFloat(spatial.getLocalRotation(), direction,tpf);
-         //Add to the local translation based on the current velocity
-        containerNode.setLocalTranslation(containerNode.getLocalTranslation().add(velocity.mult(tpf)));
-        
-        //debug loop
-        count++;
-        if(debugOn && count == 120)
-        {
-            //System.out.println("cam: " + camVec);
-            //System.out.println("mouse: " + lookAtMouseVector);
-            //System.out.println("quat: " + q);
-            System.out.println();
-            count = 0;
-        }
+    public void update(float tpf) {
+        super.update(tpf);//update rigid body control
     }
 
-    /**
-     * Container node is what the camera is attached to.  This
-     * allows the camera to stay still despite what the ship may do later on.
-     * @param container 
-     */
-    public void setContainerNode(Node container) {
-        containerNode = container;
-    }
-
+   
     @Override
     public List<String> getDebugInfo() {
         return Arrays.asList(
                 "Ship - Hello World",
-                "direction: " + direction.toString(),
-                "velocity: " + velocity.toString());
+                "location: " + getPhysicsLocation(),
+                "physicsRotation: " + getPhysicsRotation(),
+                "linearVelocity: " + getLinearVelocity(),
+                "angularVelocity: " + getAngularVelocity());
     }
-    
 }

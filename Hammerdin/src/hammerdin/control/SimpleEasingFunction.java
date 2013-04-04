@@ -13,7 +13,7 @@ import com.jme3.math.Quaternion;
 public class SimpleEasingFunction implements ShipEasingFunction{
 
     @Override
-    public float getSlurpFloat(Quaternion currentRotation, Quaternion newRotation) {
+    public float getSlurpFloat(Quaternion currentRotation, Quaternion newRotation, float tpf) {
         return 3f;
     }
     

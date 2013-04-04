@@ -6,9 +6,11 @@ package hammerdin.appstate;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.input.ChaseCamera;
 import com.jme3.light.DirectionalLight;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Node;
@@ -23,12 +25,13 @@ import hammerdin.control.AdvancedEasingFunction;
 import hammerdin.control.ShipControl;
 import hammerdin.control.ShipControl2;
 import hammerdin.control.ShipControl3;
+import hammerdin.control.ShipControl4;
 
 /**
  *
  * @author aglassman
  */
-public class ShipControlTestAppState extends AbstractAppState {
+public class ShipControlTestAppState extends BulletAppState {
     
     SimpleApplication app;
     EntitySystem es = new EntitySystem();
@@ -36,6 +39,7 @@ public class ShipControlTestAppState extends AbstractAppState {
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
+        this.getPhysicsSpace().setGravity(Vector3f.ZERO);
         this.app = (SimpleApplication)app;
                    
         dss = new DebugSubSystem(new GuiDebugRenderer(this.app));
@@ -46,7 +50,8 @@ public class ShipControlTestAppState extends AbstractAppState {
     
     private void initState()
     {
-        final int testControl = 3;
+        
+        final int testControl = 4;
         System.out.println("inited");
         Spatial scene = app.getAssetManager().loadModel("Scenes/ShipControlTestScene.j3o");
         app.getRootNode().attachChild(scene);
@@ -65,6 +70,8 @@ public class ShipControlTestAppState extends AbstractAppState {
                         setupControl2(spatial);
                     else if(testControl == 3)
                         setupControl3(spatial);
+                    else if(testControl == 4)
+                        setupControl4(spatial);
                 }
             }
         });
@@ -80,6 +87,8 @@ public class ShipControlTestAppState extends AbstractAppState {
     @Override
     public void update(float tpf) {
         es.process();
+        this.getPhysicsSpace().update(tpf);
+        app.getRootNode().updateGeometricState();
     }
     
     @Override
@@ -148,10 +157,52 @@ public class ShipControlTestAppState extends AbstractAppState {
         camNode.lookAt(((Node)spatial).getLocalTranslation(), Vector3f.UNIT_Y);
         app.getInputManager().setCursorVisible(true);
         shipControl.setCam(camNode.getCamera());
-        shipControl.setShipEasingFunction(new AdvancedEasingFunction());
+        
+        AdvancedEasingFunction aef = new AdvancedEasingFunction();
+        
+        shipControl.setShipEasingFunction(aef);
         
         DebugEntity de = new DebugEntity(1l, shipControl);
-        de.updateOnCount = 100;
+        de.updateOnCount = 5;
+        de.on = true;
+        dss.register(de);
+        
+        DebugEntity de2 = new DebugEntity(2l, aef);
+        de2.updateOnCount = 5;
+        de2.on = true;
+        dss.register(de2);
+        
+        dss.initDebugKeyboardControl(app.getInputManager());
+        
+    }
+    
+        private void setupControl4(Spatial spatial)
+    {
+        System.out.println("found");
+        Node container = ((Node)spatial);
+        Spatial ship =  container.getChildren().get(0);
+        ShipControl4 shipControl = new ShipControl4(.5f);
+        ship.addControl(shipControl);
+        this.getPhysicsSpace().add(shipControl);
+        shipControl.initKeyMapping(app.getInputManager());
+        //ship.addControl(shipControl);
+        
+        
+        app.getFlyByCamera().setEnabled(false);
+
+        //create the camera Node
+        ChaseCamera chaseCam = new ChaseCamera(app.getCamera(),ship,app.getInputManager());
+        chaseCam.setChasingSensitivity(1);
+        chaseCam.setUpVector(Vector3f.UNIT_Y);
+        chaseCam.setDefaultDistance(100);
+        chaseCam.setDefaultVerticalRotation(FastMath.HALF_PI);
+        chaseCam.setSmoothMotion(true);
+        app.getInputManager().setCursorVisible(true);
+        shipControl.setCam(app.getCamera());
+        
+         
+        DebugEntity de = new DebugEntity(1l, shipControl);
+        de.updateOnCount = 10;
         de.on = true;
         dss.register(de);
         

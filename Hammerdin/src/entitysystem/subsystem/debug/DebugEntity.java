@@ -17,6 +17,8 @@ public class DebugEntity {
     private int count = 0;
     public boolean on = false;
     private DebugProxy proxy;
+    private boolean getNewInfo;
+    private List<String> currentInfo;
     public DebugEntity(long id,DebugProxy proxy)
     {
         this.id = id;
@@ -36,6 +38,7 @@ public class DebugEntity {
         if(count >= updateOnCount)
         {
             count = 0;
+            getNewInfo = true;
             return true;
         }
         
@@ -44,6 +47,11 @@ public class DebugEntity {
     
     public List<String> getDebugInfo()
     {
-        return proxy.getDebugInfo();
+        if(getNewInfo)
+        {
+            currentInfo = proxy.getDebugInfo();
+            getNewInfo = false;
+        }
+        return currentInfo;
     }
 }

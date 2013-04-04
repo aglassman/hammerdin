@@ -33,10 +33,8 @@ public class DebugSubSystem extends SubSystem{
     public void process() {
         for(DebugEntity e : debuggableEntities)
         {
-            if(e.process())
-            {
-                debugRenderer.preRender(e);
-            }
+            e.process();
+            debugRenderer.preRender(e);
         }
         debugRenderer.render();
     }

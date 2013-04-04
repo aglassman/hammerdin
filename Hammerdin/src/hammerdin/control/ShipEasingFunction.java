@@ -11,5 +11,5 @@ import com.jme3.math.Quaternion;
  * @author aglassman
  */
 public interface ShipEasingFunction {
-    public float getSlurpFloat(Quaternion currentRotation, Quaternion newRotation);
+    public float getSlurpFloat(Quaternion currentRotation, Quaternion newRotation,float tpf);
 }
