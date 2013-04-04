@@ -8,12 +8,12 @@ package input.utils;
  *
  * @author aglassman
  */
-public class KeySequenceType
+public class Keystroke
 {
     public final int key;
-    public final KeystrokeSequence.SequenceType sequenceType;
+    public final Type sequenceType;
     int currentValue = 0;
-    public KeySequenceType(int key, KeystrokeSequence.SequenceType sequenceType)
+    public Keystroke(int key, Type sequenceType)
     {
         this.key = key;
         this.sequenceType = sequenceType;
@@ -23,5 +23,10 @@ public class KeySequenceType
     public String toString()
     {
         return Integer.toString(key);
+    }
+    
+    public enum Type
+    {
+        HELD,PRESSED,TERMINAL
     }
 }

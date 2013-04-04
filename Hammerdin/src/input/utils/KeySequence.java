@@ -13,8 +13,8 @@ import java.util.Arrays;
 public class KeySequence
 {
     public final String name;
-    public final KeySequenceType[] sequence;
-    public KeySequence(String name,KeySequenceType... sequence)
+    public final Keystroke[] sequence;
+    public KeySequence(String name,Keystroke... sequence)
     {
         this.name = name;
         this.sequence = sequence;
@@ -28,7 +28,7 @@ public class KeySequence
 
     String getState() {
         StringBuilder sb = new StringBuilder();
-        for(KeySequenceType kst : sequence)
+        for(Keystroke kst : sequence)
         {
             sb.append(String.format("(name:%s state: %s) ",kst.key, kst.currentValue));
         }

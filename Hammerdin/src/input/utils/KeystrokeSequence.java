@@ -7,8 +7,8 @@ package input.utils;
 import com.jme3.input.InputManager;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import input.utils.Keystroke.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -35,7 +35,7 @@ public class KeystrokeSequence {
 
             @Override
             public void onAction(String name, boolean isPressed, float tpf) {
-               for(KeySequenceType kst : ks.sequence)
+               for(Keystroke kst : ks.sequence)
                 {
                     if(kst.currentValue == 0 && !Integer.toString(kst.key).equals(name))
                     {
@@ -47,28 +47,28 @@ public class KeystrokeSequence {
                     if(Integer.toString(kst.key).equals(name))
                     {
                         //If it is pressed, and is of hold type, set to one and continue
-                        if(isPressed && kst.sequenceType.equals(SequenceType.HELD))
+                        if(isPressed && kst.sequenceType.equals(Type.HELD))
                         {
                            kst.currentValue = 1;
                             break;
                         }
                         
                         //If it is released and is of held type, no longer valid, break.
-                        if(!isPressed && kst.sequenceType.equals(SequenceType.HELD))
+                        if(!isPressed && kst.sequenceType.equals(Type.HELD))
                         {
                            resetSequence(ks);
                             break;
                         }
                         
                         //If it is pressed, yet already set, fail.
-                        if(isPressed && kst.currentValue == 1 && kst.sequenceType.equals(SequenceType.PRESSED))
+                        if(isPressed && kst.currentValue == 1 && kst.sequenceType.equals(Type.PRESSED))
                         {
                             resetSequence(ks);
                             break;
                         }
                         
                         //If it is released, and type was pressed, set to valid.
-                        if(!isPressed && kst.sequenceType.equals(SequenceType.PRESSED))
+                        if(!isPressed && kst.sequenceType.equals(Type.PRESSED))
                         {
                             kst.currentValue = 1;
                             break;
@@ -76,7 +76,7 @@ public class KeystrokeSequence {
                         
                         //If it is pressed, and is a terminal, and it made it this far, 
                         // the sequence was completed correctly.
-                        if(isPressed && kst.sequenceType.equals(SequenceType.TERMINAL))
+                        if(isPressed && kst.sequenceType.equals(Type.TERMINAL))
                         {
                             resetSequenceAndRunCallback(ks);
                             break;
@@ -103,7 +103,7 @@ public class KeystrokeSequence {
     
     public void resetSequence(KeySequence ks)
     {
-        for(KeySequenceType kst : ks.sequence)
+        for(Keystroke kst : ks.sequence)
             kst.currentValue = 0;
     }
            
@@ -111,13 +111,6 @@ public class KeystrokeSequence {
     {
         public void run();
     }
-    
-    public enum SequenceType
-    {
-        HELD,PRESSED,TERMINAL
-    }
-    
-
     
 
 }

@@ -8,7 +8,7 @@ import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import entitysystem.SubSystem;
 import input.utils.KeySequence;
-import input.utils.KeySequenceType;
+import input.utils.Keystroke;
 import input.utils.KeystrokeSequence;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,8 +54,8 @@ public class DebugSubSystem extends SubSystem{
     public void initDebugKeyboardControl(InputManager im)
     {
         KeySequence keySequence = new KeySequence("Toggle All Debug On.", 
-                new KeySequenceType(KeyInput.KEY_LCONTROL, KeystrokeSequence.SequenceType.HELD),
-                new KeySequenceType(KeyInput.KEY_Z, KeystrokeSequence.SequenceType.TERMINAL));
+                new Keystroke(KeyInput.KEY_LCONTROL, Keystroke.Type.HELD),
+                new Keystroke(KeyInput.KEY_Z, Keystroke.Type.TERMINAL));
         
         KeystrokeSequence ks = new KeystrokeSequence(im, Arrays.asList(keySequence));
         
@@ -68,8 +68,8 @@ public class DebugSubSystem extends SubSystem{
         });
         
         KeySequence keySequence2 = new KeySequence("Toggle All Debug Off.", 
-                new KeySequenceType(KeyInput.KEY_LCONTROL, KeystrokeSequence.SequenceType.HELD),
-                new KeySequenceType(KeyInput.KEY_X, KeystrokeSequence.SequenceType.TERMINAL));
+                new Keystroke(KeyInput.KEY_LCONTROL, Keystroke.Type.HELD),
+                new Keystroke(KeyInput.KEY_X, Keystroke.Type.TERMINAL));
         
         KeystrokeSequence ks2 = new KeystrokeSequence(im, Arrays.asList(keySequence2));
         
@@ -82,8 +82,8 @@ public class DebugSubSystem extends SubSystem{
         });
         
         KeySequence keySequence3 = new KeySequence("Turn Off Debug Renderer.", 
-                new KeySequenceType(KeyInput.KEY_LCONTROL, KeystrokeSequence.SequenceType.HELD),
-                new KeySequenceType(KeyInput.KEY_C, KeystrokeSequence.SequenceType.TERMINAL));
+                new Keystroke(KeyInput.KEY_LCONTROL, Keystroke.Type.HELD),
+                new Keystroke(KeyInput.KEY_C, Keystroke.Type.TERMINAL));
         
         KeystrokeSequence ks3 = new KeystrokeSequence(im, Arrays.asList(keySequence3));
         
