@@ -45,6 +45,9 @@ public class GuiDebugRenderer implements DebugRenderer{
     
     @Override
     public void preRender(DebugEntity e) {
+        if(!on)
+            return;
+        
         if(sb == null)
             sb = new StringBuilder();
         
@@ -65,7 +68,7 @@ public class GuiDebugRenderer implements DebugRenderer{
         if(!on || sb == null)
             return;
         
-        if(debugText != null)
+        if(debugText != null && debugText.getCullHint() != Spatial.CullHint.Always)
             debugText.setText(sb.toString());
         
         sb = null;
@@ -82,6 +85,11 @@ public class GuiDebugRenderer implements DebugRenderer{
             debugText.setCullHint(Spatial.CullHint.Never);
         }
         on = !on;
+    }
+
+    @Override
+    public boolean isOn() {
+        return on;
     }
         
 }

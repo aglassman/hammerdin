@@ -16,4 +16,6 @@ public interface DebugRenderer {
 
     public void toggle();
     
+    public boolean isOn();
+    
 }

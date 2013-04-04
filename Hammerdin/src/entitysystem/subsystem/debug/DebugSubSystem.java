@@ -55,7 +55,8 @@ public class DebugSubSystem extends SubSystem{
     {
         Sequence keySequence = new Sequence("Toggle All Debug On.", 
                 new Keystroke(KeyInput.KEY_LCONTROL, Keystroke.Type.HELD),
-                new Keystroke(KeyInput.KEY_Z, Keystroke.Type.TERMINAL));
+                new Keystroke(KeyInput.KEY_Z, Keystroke.Type.HELD),
+                new Keystroke(KeyInput.KEY_NUMPAD1, Keystroke.Type.TERMINAL));
         
         KeystrokeSequence ks = new KeystrokeSequence(im, Arrays.asList(keySequence));
         
@@ -69,7 +70,8 @@ public class DebugSubSystem extends SubSystem{
         
         Sequence keySequence2 = new Sequence("Toggle All Debug Off.", 
                 new Keystroke(KeyInput.KEY_LCONTROL, Keystroke.Type.HELD),
-                new Keystroke(KeyInput.KEY_X, Keystroke.Type.TERMINAL));
+                new Keystroke(KeyInput.KEY_Z, Keystroke.Type.HELD),
+                new Keystroke(KeyInput.KEY_NUMPAD2, Keystroke.Type.TERMINAL));
         
         KeystrokeSequence ks2 = new KeystrokeSequence(im, Arrays.asList(keySequence2));
         
@@ -83,7 +85,8 @@ public class DebugSubSystem extends SubSystem{
         
         Sequence keySequence3 = new Sequence("Turn Off Debug Renderer.", 
                 new Keystroke(KeyInput.KEY_LCONTROL, Keystroke.Type.HELD),
-                new Keystroke(KeyInput.KEY_C, Keystroke.Type.TERMINAL));
+                new Keystroke(KeyInput.KEY_Z, Keystroke.Type.HELD),
+                new Keystroke(KeyInput.KEY_NUMPAD3, Keystroke.Type.TERMINAL));
         
         KeystrokeSequence ks3 = new KeystrokeSequence(im, Arrays.asList(keySequence3));
         

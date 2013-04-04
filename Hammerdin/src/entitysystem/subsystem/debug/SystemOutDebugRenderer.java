@@ -16,6 +16,9 @@ public class SystemOutDebugRenderer implements DebugRenderer{
     
     @Override
     public void preRender(DebugEntity e) {
+        if(!on)
+            return;
+        
         if(sb == null)
             sb = new StringBuilder();
         
@@ -43,5 +46,10 @@ public class SystemOutDebugRenderer implements DebugRenderer{
     public void toggle()
     {
         on = !on;
+    }
+    
+    public boolean isOn()
+    {
+        return on;
     }
 }
