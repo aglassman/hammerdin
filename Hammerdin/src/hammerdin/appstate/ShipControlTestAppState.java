@@ -198,9 +198,7 @@ public class ShipControlTestAppState extends BulletAppState {
         chaseCam.setDefaultVerticalRotation(FastMath.HALF_PI);
         chaseCam.setSmoothMotion(true);
         app.getInputManager().setCursorVisible(true);
-        shipControl.setCam(app.getCamera());
-        
-         
+                 
         DebugEntity de = new DebugEntity(1l, shipControl);
         de.updateOnCount = 10;
         de.on = true;

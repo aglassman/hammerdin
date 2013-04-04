@@ -18,7 +18,6 @@ import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.Control;
 import entitysystem.subsystem.debug.DebugProxy;
@@ -40,23 +39,12 @@ public class ShipControl4 extends RigidBodyControl implements DebugProxy{
     public static final String MOUSE_MOVE = "F";
     public static final String ROTATE_L = "G";
     public static final String ROTATE_R = "H";
-    public Vector3f velocity = new Vector3f();
     
     public ShipControl4(float mass)
     {
         super(mass);
     }
     
-    
-    private Quaternion direction = new Quaternion();
-    
-    public float maxVelocity = 5f;
-    private Camera cam = null;
-    
-    public void setCam(Camera cam)
-    {
-        this.cam = cam;
-    }
     
    
     
@@ -159,23 +147,9 @@ public class ShipControl4 extends RigidBodyControl implements DebugProxy{
      */
     private void calculateNewDirection()
     {
-        //get cursor position in world coordinates.
-        //Vector3f worldPostionOfMouse = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0f);
-        
-        //Treat position as vector, and translate it to the origin so the quaternion can be calcualted correctly.
-        //worldPostionOfMouse = worldPostionOfMouse.subtract(getPhysicsLocation());
-        //worldPostionOfMouse.y = 0;//worldPostionOfMouse = worldPostionOfMouse.mult(new Vector3f(1,0,1));
-        //direction.lookAt(worldPostionOfMouse, Vector3f.UNIT_Y);
-        
-        //ap
-        
-        //applyTorqueImpulse(Vector3f.UNIT_Y.mult(.1f));
+        //Do nothing atm.
     }
-    
-    int count = 0;
-    boolean debugOn = false;
-    
-    
+     
     
     @Override
     public void update(float tpf) {
