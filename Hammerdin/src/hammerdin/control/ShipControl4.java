@@ -15,9 +15,7 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.Control;
 import entitysystem.subsystem.debug.DebugProxy;
@@ -78,7 +76,8 @@ public class ShipControl4 extends RigidBodyControl implements DebugProxy{
     private Vector3f down = Vector3f.UNIT_Z.mult(-constant);
     
     public void initKeyMapping(final InputManager inputManager) {
-        setAngularDamping(0f);
+        //setKinematic(true);
+        setAngularDamping(.9f);
         inputManager.addListener(new AnalogListener() {
 
            

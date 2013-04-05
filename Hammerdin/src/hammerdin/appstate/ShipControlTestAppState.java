@@ -26,6 +26,7 @@ import hammerdin.control.ShipControl;
 import hammerdin.control.ShipControl2;
 import hammerdin.control.ShipControl3;
 import hammerdin.control.ShipControl4;
+import hammerdin.control.WeaponControl;
 
 /**
  *
@@ -181,7 +182,7 @@ public class ShipControlTestAppState extends BulletAppState {
         System.out.println("found");
         Node container = ((Node)spatial);
         Spatial ship =  container.getChildren().get(0);
-        ShipControl4 shipControl = new ShipControl4(.5f);
+        ShipControl4 shipControl = new ShipControl4(.8f);
         ship.addControl(shipControl);
         this.getPhysicsSpace().add(shipControl);
         shipControl.initKeyMapping(app.getInputManager());
@@ -198,13 +199,23 @@ public class ShipControlTestAppState extends BulletAppState {
         chaseCam.setDefaultVerticalRotation(FastMath.HALF_PI);
         chaseCam.setSmoothMotion(true);
         app.getInputManager().setCursorVisible(true);
-                 
+        
+        WeaponControl wc = new WeaponControl(app,this.getPhysicsSpace());
+        ship.addControl(wc);
+        
         DebugEntity de = new DebugEntity(1l, shipControl);
         de.updateOnCount = 10;
         de.on = true;
         dss.register(de);
         
+        DebugEntity de2 = new DebugEntity(2l, wc);
+        de2.updateOnCount = 5;
+        de2.on = true;
+        dss.register(de2);
+        
         dss.initDebugKeyboardControl(app.getInputManager());
+        
+        
         
     }
 }
