@@ -4,3 +4,6 @@
 *.jar
 *.war
 *.ear
+/Hammerdin/nbproject/private/
+/Hammerdin/build/
+/Hammerdin/dist/
